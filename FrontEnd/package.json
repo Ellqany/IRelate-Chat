@@ -1,14 +1,25 @@
 {
-  "name": "frontend",
+  "name": "stream-encrypted-chat",
   "version": "0.1.0",
   "private": true,
   "dependencies": {
-    "@testing-library/jest-dom": "^4.2.4",
-    "@testing-library/react": "^9.3.2",
-    "@testing-library/user-event": "^7.1.2",
-    "react": "^16.13.1",
-    "react-dom": "^16.13.1",
-    "react-scripts": "3.4.1"
+    "@auth0/auth0-spa-js": "^1.6.5",
+    "@virgilsecurity/e3kit": "^0.5.3",
+    "@virgilsecurity/e3kit-native": "^2.2.0",
+    "@virgilsecurity/key-storage-rn": "^1.0.0",
+    "@virgilsecurity/keyknox": "^1.0.0",
+    "react": "^16.9.0",
+    "react-dom": "^16.9.0",
+    "react-native": "^0.62.1",
+    "react-native-keychain": "^5.0.1",
+    "react-native-virgil-crypto": "^0.5.3",
+    "react-router-dom": "^5.1.2",
+    "react-scripts": "^3.4.1",
+    "stream-chat-react": "^0.6.26",
+    "tsutils": "^3.17.1",
+    "virgil-crypto": "^4.1.0",
+    "virgil-pythia": "^1.0.0",
+    "virgil-sdk": "^6.1.0"
   },
   "scripts": {
     "start": "react-scripts start",
