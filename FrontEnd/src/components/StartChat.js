@@ -8,17 +8,21 @@ export class StartChat extends PureComponent {
     super(props);
 
     this.state = {
+      user: props.user,
       receiver: '',
-      sender: '',
+      sender: props.user.nickname,
       stream: null,
       virgil: null,
       error: null,
     }
+
+    console.log("user", props.user);
   };
 
-  _handlesenderChange = (event) => {
-    this.setState({ sender: event.target.value });
-  };
+  // old Function used to set sender name
+  // _handlesenderChange = (event) => {
+  //   this.setState({ sender: event.target.value });
+  // };
 
   _handlereceiverChange = (event) => {
     this.setState({ receiver: event.target.value });
@@ -26,7 +30,11 @@ export class StartChat extends PureComponent {
 
   _handleRegister = (event) => {
     event.preventDefault();
-    post("http://localhost:9000/authenticate", { sender: this.state.sender })
+    
+    const user_id = this.state.user.sub.replace('auth0|','auth0-');
+    console.log(user_id);
+
+    post("http://localhost:9000/authenticate", { sender: user_id })
       .then(res => res.authToken)
       .then(this._connect);
   };
@@ -35,19 +43,28 @@ export class StartChat extends PureComponent {
     event.preventDefault();
 
     try {
-      let members = [this.state.sender, this.state.receiver];
-      members.sort();
+      const user_id = this.state.user.sub.replace('auth0|','auth0-'); 
 
-      const channel = this.state.stream.client.channel('messaging', {
+      // it is going to contains the names for both sender and reciever
+      let members = [this.state.sender, this.state.receiver];
+
+      // it is going to contains the ids for both sender and reciever
+      let memberids = [user_id, this.state.receiver];   
+
+      members.sort();
+      memberids.sort();
+
+      const messageid = memberids.join('_');
+
+      const channel = this.state.stream.client.channel('messaging', messageid, {
         image: `https://getstream.io/random_svg/?id=rapid-recipe-0&name=${members.join("+")}`,
-        name: members.join(", "),
-        members: members,
+        name: members.join(", ")
       });
 
-      const publicKeys = await this.state.virgil.eThree.lookupPublicKeys([this.state.sender, this.state.receiver]);
+      const publicKeys = await this.state.virgil.eThree.lookupPublicKeys([user_id, this.state.receiver]);
       
       this.props.onConnect({
-        sender: this.state.sender,
+        sender: user_id,
         receiver: this.state.receiver,
         stream: { ...this.state.stream, channel },
         virgil: { ...this.state.virgil, publicKeys }
@@ -63,7 +80,7 @@ export class StartChat extends PureComponent {
   };
 
   _connectStream = async (backendAuthToken) => {
-    const response = await post("http://localhost:9000/stream-credentials", {}, backendAuthToken);
+    const response = await post("http://localhost:9000/stream-credentials", { name: this.state.sender }, backendAuthToken);
 
     const client = new StreamChat(response.apiKey);
     client.setUser(response.user, response.token);
@@ -106,14 +123,17 @@ export class StartChat extends PureComponent {
         handleFieldChange: this._handlereceiverChange
       }
     } else {
-      form = {
-        field: 'sender',
-        title: 'Who are you?',
-        subtitle: 'Enter a username.',
-        submitLabel: 'Register',
-        submit: this._handleRegister,
-        handleFieldChange: this._handlesenderChange
-      };
+      return (
+        <div className="container">
+          <form className="card" onSubmit={this._handleRegister}>
+            <div className="subtitle">
+              <label htmlFor="sender">Continue as {this.state.sender}</label>
+            </div>
+            <input type="submit" value="Continue"/>
+            <div className="error">{this.state.error}</div>
+          </form>
+        </div>
+      )
     }
 
     return (

@@ -13,11 +13,7 @@ export class EncryptedChat extends React.Component {
       receiver: null,
       stream: null,
       virgil: null
-    };
-
-    console.log("user",this.state.sender);
-    console.log('user id: ' + props.user.sub);
-  
+    };  
   }
 
   _buildMessageEncrypted = (props) => {
@@ -49,7 +45,7 @@ export class EncryptedChat extends React.Component {
         </Chat>
       )
     } else {
-      return <StartChat onConnect={this.onConnect}/>
+      return <StartChat user={this.state.sender} onConnect={this.onConnect}/>
     }
   }
 }

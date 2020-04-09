@@ -15,6 +15,7 @@ exports.streamCredentials = async (req, res) => {
 
         const user = Object.assign({}, data, {
             id: `${req.user.sender}`,
+            name: req.body.name,
             role: 'admin',
             image: `https://robohash.org/${req.user.sender}`,
         });
