@@ -17,6 +17,7 @@ exports.streamCredentials = async (req, res) => {
             id: `${req.user.sender}`,
             name: req.body.name,
             role: 'admin',
+            email: req.body.email,
             image: `https://robohash.org/${req.user.sender}`,
         });
 

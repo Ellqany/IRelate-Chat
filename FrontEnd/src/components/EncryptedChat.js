@@ -13,7 +13,7 @@ export class EncryptedChat extends React.Component {
       receiver: null,
       stream: null,
       virgil: null
-    };  
+    };
   }
 
   _buildMessageEncrypted = (props) => {

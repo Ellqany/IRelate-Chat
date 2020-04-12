@@ -1,1 +1,1 @@
-export { streamToken } from './stream-token.action';
+export { streamCredentials } from './stream-credentials.action';

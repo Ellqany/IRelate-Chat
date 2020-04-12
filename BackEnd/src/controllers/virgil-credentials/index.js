@@ -1,1 +1,1 @@
-export { virgilToken } from './virgil-token.action';
+export { virgilCredentials } from './virgil-credentials.action';

@@ -7,9 +7,11 @@ export class StartChat extends PureComponent {
   constructor(props) {
     super(props);
 
+    const id = (new URLSearchParams(window.location.search)).get("id");
+
     this.state = {
       user: props.user,
-      receiver: '',
+      receiver: id,
       sender: props.user.nickname,
       stream: null,
       virgil: null,
@@ -17,6 +19,7 @@ export class StartChat extends PureComponent {
     }
 
     console.log("user", props.user);
+    this._handleRegister();
   };
 
   // old Function used to set sender name
@@ -24,12 +27,12 @@ export class StartChat extends PureComponent {
   //   this.setState({ sender: event.target.value });
   // };
 
-  _handlereceiverChange = (event) => {
-    this.setState({ receiver: event.target.value });
-  };
+  // _handlereceiverChange = (event) => {
+  //   this.setState({ receiver: event.target.value });
+  // };
 
-  _handleRegister = (event) => {
-    event.preventDefault();
+  _handleRegister = () => {
+    // event.preventDefault();
     
     const user_id = this.state.user.sub.replace('auth0|','auth0-');
     console.log(user_id);
@@ -39,9 +42,7 @@ export class StartChat extends PureComponent {
       .then(this._connect);
   };
 
-  _handleStartChat = async (event) => {
-    event.preventDefault();
-
+  _handleStartChat = async () => {
     try {
       const user_id = this.state.user.sub.replace('auth0|','auth0-'); 
 
@@ -80,7 +81,12 @@ export class StartChat extends PureComponent {
   };
 
   _connectStream = async (backendAuthToken) => {
-    const response = await post("http://localhost:9000/stream-credentials", { name: this.state.sender }, backendAuthToken);
+    const data = {
+      name: this.state.sender,
+      email: this.state.user.email
+    };
+
+    const response = await post("http://localhost:9000/stream-credentials", { data }, backendAuthToken);
 
     const client = new StreamChat(response.apiKey);
     client.setUser(response.user, response.token);
@@ -109,43 +115,15 @@ export class StartChat extends PureComponent {
     const virgil = await this._connectVirgil(authToken);
 
     this.setState({ stream, virgil })
+    await this._handleStartChat();
   };
 
   render() {
-    let form;
-    if (this.state.virgil && this.state.stream) {
-      form = {
-        field: 'receiver',
-        title: 'Who do you want to chat with?',
-        subtitle: 'Registered as "' + this.state.sender + '". Open this app in another window to register another user, or type a previously registered username below to start a chat.',
-        submitLabel: 'Start Chat',
-        submit: this._handleStartChat,
-        handleFieldChange: this._handlereceiverChange
-      }
-    } else {
-      return (
-        <div className="container">
-          <form className="card" onSubmit={this._handleRegister}>
-            <div className="subtitle">
-              <label htmlFor="sender">Continue as {this.state.sender}</label>
-            </div>
-            <input type="submit" value="Continue"/>
-            <div className="error">{this.state.error}</div>
-          </form>
-        </div>
-      )
-    }
-
     return (
       <div className="container">
-        <form className="card" onSubmit={form.submit}>
-          <label htmlFor={form.field}>{form.title}</label>
-          <div className='subtitle'>{form.subtitle}</div>
-          <input id="sender" type="text" name={form.field} value={this.state[form.field]}
-                 onChange={form.handleFieldChange}/>
-          <input type="submit" value={form.submitLabel}/>
-          <div className="error">{this.state.error}</div>
-        </form>
+          <div className="subtitle">
+            <label>Loading ...</label>
+          </div>
       </div>
     )
   }
