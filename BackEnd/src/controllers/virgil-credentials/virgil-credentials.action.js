@@ -33,6 +33,7 @@ exports.virgilCredentials = async (req, res) => {
     const virgilJwtToken = generator.generateToken(req.user.sender);
 
     res.json({
-        token: virgilJwtToken.toString()
+        token: virgilJwtToken.toString(),
+        pwd: process.env.VIRGIL_PRIVATE_KEY
     });
 };

@@ -1,39 +1,39 @@
 import dotenv from 'dotenv';
 import {
-    StreamChat
+	StreamChat
 } from 'stream-chat';
 
 dotenv.config();
 
 exports.streamCredentials = async (req, res) => {
-    try {
+	try {
         const data = req.body;
-        const apiKey = process.env.STREAM_API_KEY;
-        const apiSecret = process.env.STREAM_API_SECRET;
+		const apiKey = process.env.STREAM_API_KEY;
+		const apiSecret = process.env.STREAM_API_SECRET;
 
-        const client = new StreamChat(apiKey, apiSecret);
+		const client = new StreamChat(apiKey, apiSecret);
 
-        const user = Object.assign({}, data, {
-            id: `${req.user.sender}`,
-            name: req.body.name,
-            role: 'admin',
-            email: req.body.email,
-            image: `https://robohash.org/${req.user.sender}`,
-        });
+		const user = Object.assign({}, data, {
+			id: req.user.sender,
+			role: 'admin',
+			image: req.user.image,
+			name: req.user.name,
+			email: req.user.email
+		});
 
-        const token = client.createToken(user.id);
-        await client.updateUsers([user]);
+		const token = client.createToken(user.id);
+		await client.updateUsers([user]);
 
-        res.status(200).json({
-            user,
-            token,
-            apiKey
-        });
+		res.status(200).json({
+			user,
+			token,
+			apiKey
+		});
 
-    } catch (error) {
-        console.log(error);
-        res.status(500).json({
-            error: error.message
-        });
-    }
+	} catch (error) {
+		console.log(error);
+		res.status(500).json({
+			error: error.message
+		});
+	}
 };

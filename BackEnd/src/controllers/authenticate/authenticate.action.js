@@ -12,37 +12,48 @@ const pseudoDecodeToken = (token) => usersStorage.get(token);
 const pseudoVerifyToken = (token) => usersStorage.has(token);
 
 exports.requireAuthHeader = (req, res, next) => {
-    // 'Check if request is authorized with token from POST /authorize'
-    if ((!req.headers.authorization || !req.headers.authorization.startsWith('Bearer '))) {
+	// 'Check if request is authorized with token from POST /authorize'
+	if ((!req.headers.authorization || !req.headers.authorization.startsWith('Bearer '))) {
 
-        res.statusMessage = "No Authorization header";
-        res.status(401).send('Unauthorized');
-        return;
-    }
+		res.statusMessage = "No Authorization header";
+		res.status(401).send('Unauthorized');
+		return;
+	}
 
-    const userToken = req.headers.authorization.split('Bearer ')[1];
+	const userToken = req.headers.authorization.split('Bearer ')[1];
 
-    if (!pseudoVerifyToken(userToken)) res.status(401).send('Unauthorized');
+	if (!pseudoVerifyToken(userToken)) res.status(401).send('Unauthorized');
 
-    req.user = {
-        sender: pseudoDecodeToken(userToken)
-    };
+	if (!req.body || !req.body.data) {
+		req.user = {
+			sender: pseudoDecodeToken(userToken)
+		}
+	} else {
+		req.user = {
+			sender: pseudoDecodeToken(userToken),
+			name: req.body.data.name,
+			image: req.body.data.image,
+			email: req.body.data.email
+        };
+        
+        req.body.data = {};
+	}
 
-    next();
+	next();
 };
 
 exports.authenticate = async (req, res) => {
-    if (!req.body || !req.body.sender) {
-        res.statusMessage = 'You should specify sender in body';
-        res.status(400).end();
-        return;
-    }
+	if (!req.body || !req.body.sender) {
+		res.statusMessage = 'You should specify sender in body';
+		res.status(400).end();
+		return;
+	}
 
-    const token = generateUserToken();
+	const token = generateUserToken();
 
-    pseudoEncodeToken(req.body.sender, token);
+	pseudoEncodeToken(req.body.sender, token);
 
-    res.json({
-        authToken: token
-    });
+	res.json({
+		authToken: token
+	});
 };
