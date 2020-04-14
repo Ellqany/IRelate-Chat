@@ -7,6 +7,7 @@ export class StartChat extends PureComponent {
   constructor(props) {
     super(props);
 
+    // get the reciver id from the url link
     const id = (new URLSearchParams(window.location.search)).get("id");
 
     this.state = {
@@ -34,9 +35,11 @@ export class StartChat extends PureComponent {
   _handleRegister = () => {
     // event.preventDefault();
 
+    // replace | with - because in stream chat id not allowed to contains |
     const user_id = this.state.user.sub.replace('auth0|', 'auth0-');
-    console.log(user_id);
+    console.log('User id: ' + user_id);
 
+    // authenticate user threw backend
     post("http://localhost:9000/authenticate", {
         sender: user_id
       })
@@ -46,6 +49,7 @@ export class StartChat extends PureComponent {
 
   _handleStartChat = async () => {
     try {
+      // replace | with - because in stream chat id not allowed to contains |
       const user_id = this.state.user.sub.replace('auth0|', 'auth0-');
 
 
@@ -59,12 +63,13 @@ export class StartChat extends PureComponent {
 
       // it is going to contains the names for both sender and reciever
       let members = [this.state.sender, recivername];
+      members.sort();
 
       // it is going to contains the ids for both sender and reciever
       let memberids = [user_id, this.state.receiver];
-
-      members.sort();
       memberids.sort();
+
+      // Create unique message id for every channel to keep data saved on stream chat
       const messageid = memberids.join('_');
 
       const channel = this.state.stream.client.channel('messaging', messageid, {
@@ -73,8 +78,10 @@ export class StartChat extends PureComponent {
         members: memberids
       });
 
+      // this function used to remove channel data
       // const destroy = await channel.delete();
 
+      // get the public virgil key
       const publicKeys = await this.state.virgil.eThree.lookupPublicKeys([user_id, this.state.receiver]);
 
       this.props.onConnect({
@@ -104,6 +111,7 @@ export class StartChat extends PureComponent {
   };
 
   _connectStream = async (backendAuthToken) => {
+    // user data used to create chatstream account retrive from auth0
     const data = {
       name: this.state.sender,
       email: this.state.user.email,
@@ -127,6 +135,7 @@ export class StartChat extends PureComponent {
     const response = await post("http://localhost:9000/virgil-credentials", {}, backendAuthToken);
     const eThree = await EThree.initialize(() => response.token);
 
+    // check if the user already backup his or her private key
     if (! await eThree.hasLocalPrivateKey()) {
       await eThree.backupPrivateKey(response.pwd);
       // await eThree.restorePrivateKey();

@@ -20,7 +20,7 @@ components. All source code for this application is available on
 Both Stream Chat and Virgil make it easy to build a solution with excellent security
 with all the features you expect.
 
-## What is end-to-end encryption?
+## What is end-to-end encryption
 
 End-to-end encryption means that they can only read messages sent between two people. To do this, the message is encrypted before it leaves a user's
 device, and can only be decrypted by the intended recipient.
@@ -101,24 +101,23 @@ This tutorial uses the following package versions:
 * Virgil e3Kit 0.5.3
 * Express 4.17.1
 
-Except for `node` and `yarn`, all of these dependencies are declared in 
-`backend/package.json` and `frontend/package.json`. 
+Except for `node` and `yarn`, all of these dependencies are declared in
+`backend/package.json` and `frontend/package.json`.
 
 ## Step 0. Setup the Backend
 For our React frontend to interact with Stream and Virgil, the
 application provides three endpoints:
 
-* `POST /v1/authenticate`: This endpoint generates an auth token that allows the
-  React frontend to communicate with `/v1/stream-credentials` and
-  `/v1/virgil-credentials`. To keep things simple, this endpoint allows
+* `POST /authenticate`: This endpoint generates an auth token that allows the
+  React frontend to communicate with `/stream-credentials` and
+  `/virgil-credentials`. To keep things simple, this endpoint allows
   the client to be any user. The frontend tells the backend who it wants
   to authenticate as. In your application, this should be replaced with your
   API's authentication endpoint.
-* `POST /v1/stream-credentials`: This returns the data required for the React
+* `POST /stream-credentials`: This returns the data required for the React
   app to establish a session with Stream. In order return this info we need to
-  tell Stream this user exists and ask them to create a valid auth token:
-  ```javascript
-  // backend/src/controllers/v1/stream-credentials.js
+  tell Stream this user exists and ask them to create a valid auth token: ```javascript
+  // backend/src/controllers/stream-credentials.js
   exports.streamCredentials = async (req, res) => {
     const data = req.body;
     const apiKey = process.env.STREAM_API_KEY;
@@ -155,11 +154,11 @@ application provides three endpoints:
   * `user`: This object contains the data that the frontend needs to connect and
     render the user's view.
 
-* `POST /v1/virgil-credentials`: This returns the authentication token used to
+* `POST /virgil-credentials`: This returns the authentication token used to
   connect the frontend to Virgil. We use the Virgil Crypto SDK to generate a
   valid auth token for us:
   ```javascript
-  // backend/src/controllers/v1/virgil-credentials.js
+  // backend/src/controllers/virgil-credentials.js
   const virgilCrypto = new VirgilCrypto();
   
   const generator = new JwtGenerator({
@@ -191,7 +190,7 @@ backend:
 
 ```javascript
 // frontend/src/StartChat.js
-post("http://localhost:8080/v1/authenticate", { sender: this.state.sender })
+post("http://localhost:9000/authenticate", { sender: this.state.sender })
   .then(res => res.authToken)
   .then(this._connect);
 ```
@@ -206,7 +205,7 @@ frontend client to Stream:
 
 ```javascript
 // frontend/src/StartChat.js
-const response = await post("http://localhost:8080/v1/stream-credentials", {}, backendAuthToken);
+const response = await post("http://localhost:9000/stream-credentials", {}, backendAuthToken);
 
 const client = new StreamChat(response.apiKey);
 client.setUser(response.user, response.token);
@@ -223,7 +222,7 @@ Virgil's `e3kit` library:
 
 ```javascript
 // frontend/src/StartChat.js
-const response = await post("http://localhost:8080/v1/virgil-credentials", {}, backendAuthToken);
+const response = await post("http://localhost:9000/virgil-credentials", {}, backendAuthToken);
 const eThree = await EThree.initialize(() => response.token);
 await eThree.register();
 ```

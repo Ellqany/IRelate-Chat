@@ -25,17 +25,20 @@ exports.requireAuthHeader = (req, res, next) => {
 	if (!pseudoVerifyToken(userToken)) res.status(401).send('Unauthorized');
 
 	if (!req.body || !req.body.data) {
+		// send to virigile only user id to authenticate
 		req.user = {
 			sender: pseudoDecodeToken(userToken)
 		}
 	} else {
+		// add to stream user his data from auth0 account
 		req.user = {
 			sender: pseudoDecodeToken(userToken),
 			name: req.body.data.name,
 			image: req.body.data.image,
 			email: req.body.data.email
         };
-        
+		
+		// remove data from the body to prevent dublication
         req.body.data = {};
 	}
 

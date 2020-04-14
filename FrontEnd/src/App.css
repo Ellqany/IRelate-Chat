@@ -37,3 +37,24 @@
     transform: rotate(360deg);
   }
 }
+
+.socialLink {
+  float: right;
+  position: absolute;
+  z-index: 100;
+  bottom: auto;
+  width: 2% !important;
+  left: 2%;
+}
+
+@media (max-height: 1023px) {
+  .socialLink {
+    top: 20%;
+  }
+}
+
+@media (min-height: 1024px) {
+  .socialLink {
+    top: 12%;
+  }
+}
