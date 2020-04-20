@@ -33,18 +33,20 @@ export class StartChat extends PureComponent {
   // };
 
   _handleRegister = () => {
-    // event.preventDefault();
+    if (this.state.receiver) {
+      // event.preventDefault();
 
-    // replace | with - because in stream chat id not allowed to contains |
-    const user_id = this.state.user.sub.replace('auth0|', 'auth0-');
-    console.log('User id: ' + user_id);
+      // replace | with - because in stream chat id not allowed to contains |
+      const user_id = this.state.user.sub.replace('auth0|', 'auth0-');
+      console.log('User id: ' + user_id);
 
-    // authenticate user threw backend
-    post("http://localhost:9000/authenticate", {
-        sender: user_id
-      })
-      .then(res => res.authToken)
-      .then(this._connect);
+      // authenticate user threw backend
+      post("http://localhost:9000/authenticate", {
+          sender: user_id
+        })
+        .then(res => res.authToken)
+        .then(this._connect);
+    }
   };
 
   _handleStartChat = async () => {
@@ -79,7 +81,7 @@ export class StartChat extends PureComponent {
       });
 
       // this function used to remove channel data
-      // const destroy = await channel.delete();
+      // await channel.delete();
 
       // get the public virgil key
       const publicKeys = await this.state.virgil.eThree.lookupPublicKeys([user_id, this.state.receiver]);
@@ -110,12 +112,37 @@ export class StartChat extends PureComponent {
     }
   };
 
-  _connectStream = async (backendAuthToken) => {
+  _getUserData = async (backendAuthToken) => {
     // user data used to create chatstream account retrive from auth0
+
+    const id = this.state.user.sub;
+
+    const response = await post("http://localhost:9000/Auth0Manager-action", {
+      id
+    }, backendAuthToken);
+
+    this.setState({
+      sender: response.user.user_metadata.firstname
+    });
+
+    return {
+      ...response
+    };
+  };
+
+  _connectStream = async (backendAuthToken, userData) => {
+    // user data used to create chatstream account retrive from auth0
+    let picture = ''
+
+    if (userData.user.user_metadata.picture) {
+      picture = userData.user.user_metadata.picture;
+    } else {
+      picture = this.state.user.picture;
+    }
+
     const data = {
       name: this.state.sender,
-      email: this.state.user.email,
-      image: this.state.user.picture
+      image: picture
     };
 
     const response = await post("http://localhost:9000/stream-credentials", {
@@ -136,9 +163,14 @@ export class StartChat extends PureComponent {
     const eThree = await EThree.initialize(() => response.token);
 
     // check if the user already backup his or her private key
-    if (! await eThree.hasLocalPrivateKey()) {
-      await eThree.backupPrivateKey(response.pwd);
-      // await eThree.restorePrivateKey();
+    try {
+      if (!await eThree.hasLocalPrivateKey()) {
+        const user_id = this.state.user.sub.replace('auth0|', 'auth0-');
+        await eThree.backupPrivateKey(user_id);
+        // await eThree.restorePrivateKey();
+      }
+    } catch (err) {
+      console.log(err);
     }
 
     try {
@@ -160,7 +192,8 @@ export class StartChat extends PureComponent {
   };
 
   _connect = async (authToken) => {
-    const stream = await this._connectStream(authToken);
+    const userData = await this._getUserData(authToken);
+    const stream = await this._connectStream(authToken, userData);
     const virgil = await this._connectVirgil(authToken);
 
     this.setState({
@@ -171,10 +204,17 @@ export class StartChat extends PureComponent {
   };
 
   render() {
-    return ( 
+    let data = '';
+    if(this.state.receiver) {
+      data = 'Loading...';
+    } else {
+      data = 'Thank you for registering, you will now recieve iRelate conversation links via email';
+    }
+    
+    return (
       <div className="container">
         <div className="subtitle">
-          <label> Loading... </label> 
+          <label> {data} </label> 
         </div> 
       </div>
     )

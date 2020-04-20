@@ -3,6 +3,7 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 const nodemailer = require('nodemailer');
+const Auth0Manager = require("../../utils/Auth0Manager");
 
 const mailto = (reciveremail, senderid, sender) => {
 	// create nodemailer opject to send mails
@@ -43,14 +44,21 @@ exports.sendMail = async (req, res) => {
 
 	// check if the message is new
 	if (data.type == "message.new") {
-	// check if there is a member who is offline to ssend message to
-		data.members.forEach(member => {
+		// check if there is a member who is offline to ssend message to
+		for (let i = 0; i < data.members.length; i++) {
+			const member = data.members[i];
 			if (member.user.online == false) {
 				const senderid = data.user.id;
-				const reciveremail = member.user.email;
+				
+				const id = member.user.id.replace('auth0-', 'auth0|');
+				await Auth0Manager.init();
+				const users = await Auth0Manager.getUser(id);
+				const userdata = users.filter(item => item.user_id == id)[0];
+				const reciveremail = userdata.email;
+
 				const sender = data.user.name;
 				mailto(reciveremail, senderid, sender);
 			}
-		});
+		}
 	}
 }
