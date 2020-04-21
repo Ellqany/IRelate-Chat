@@ -30,7 +30,7 @@ const mailto = (reciveremail, reciverid, sender) => {
 	// message options
 	var mailOptions = {
 		from: process.env.MAIL_USERNAME,
-		to: 'ellqany@gmail.com',
+		to: reciveremail,
 		subject: 'New message recieved',
 		html: `			
 				<h2 style="width: 80%; float: left; margin: 4px;">${sender.name} send you a message</h2>
