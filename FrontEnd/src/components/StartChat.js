@@ -80,6 +80,18 @@ export class StartChat extends PureComponent {
         members: memberids
       });
 
+      // This function used to update the cahnnel without removing its data
+      // you must supply the text otherwise the function will be blocked
+
+      // await channel.update(
+      //   {
+      //       name: members.join(", "),
+      //       color: 'blue',
+      //   }, {
+      //     text: 'Thierry changed the channel color to green' 
+      //   },
+      // );
+
       // this function used to remove channel data
       // await channel.delete();
 
